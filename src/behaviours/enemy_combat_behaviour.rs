@@ -7,7 +7,8 @@ use thomas::core::{
 use thomas::Behaviour;
 
 use crate::{
-    make_bullet, BulletHitPayload, BulletType, ENEMY_SPAWNER_ID, MSG_BULLET_HIT, MSG_ENEMY_DIED,
+    make_bullet, BulletHitPayload, BulletType, ENEMY_SPAWNER_ID, GAME_MANAGER_ID, MSG_BULLET_HIT,
+    MSG_ENEMY_DIED, MSG_PLAYER_KILLED_ENEMY,
 };
 
 const CHANCE_TO_SHOOT: u8 = 50;
@@ -18,6 +19,7 @@ pub struct EnemyCombatBehaviour {
     health: u32,
     shoot_wait_timer: Timer,
     shoot_roll_wait_time: u128,
+    killed_by_player: bool,
 }
 impl EnemyCombatBehaviour {
     pub fn new() -> Self {
@@ -25,6 +27,7 @@ impl EnemyCombatBehaviour {
             health: 1,
             shoot_wait_timer: Timer::new(),
             shoot_roll_wait_time: thread_rng().gen_range(SHOOT_ROLL_WAIT_TIME_RANGE_MILLIS),
+            killed_by_player: false,
         }
     }
 
@@ -75,6 +78,7 @@ impl CustomBehaviour for EnemyCombatBehaviour {
                 if let Some(payload) = Message::<BulletHitPayload>::get_payload(message) {
                     if payload.bullet_type == BulletType::Player {
                         self.health = 0;
+                        self.killed_by_player = true;
                     }
                 }
             }
@@ -86,6 +90,13 @@ impl CustomBehaviour for EnemyCombatBehaviour {
         utils.commands.issue(GameCommand::SendMessage {
             entity_id: ENEMY_SPAWNER_ID.to_string(),
             message: Message::new(MSG_ENEMY_DIED, Box::new(0)),
-        })
+        });
+
+        if self.killed_by_player {
+            utils.commands.issue(GameCommand::SendMessage {
+                entity_id: GAME_MANAGER_ID.to_string(),
+                message: Message::new(MSG_PLAYER_KILLED_ENEMY, Box::new(0)),
+            });
+        }
     }
 }

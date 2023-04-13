@@ -7,6 +7,8 @@ pub struct BulletHitPayload {
 
 pub const MSG_ENEMY_DIED: &str = "enemydied";
 
+pub const MSG_PLAYER_KILLED_ENEMY: &str = "enemydiedbyplayer";
+
 pub const MSG_RESET: &str = "reset";
 
 pub const MSG_CHANGE_TEXT: &str = "updatetxt";

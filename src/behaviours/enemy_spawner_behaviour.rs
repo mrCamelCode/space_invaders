@@ -5,7 +5,7 @@ use thomas::{get_behaviour_name, Behaviour};
 
 use crate::{make_enemy, EnemyCombatBehaviour, MSG_ENEMY_DIED, MSG_RESET, SCREEN_WIDTH};
 
-const NUM_ENEMIES_IN_ROW: u32 = 6;
+const NUM_ENEMIES_IN_ROW: u32 = 8;
 const NUM_ENEMY_ROWS: u32 = 3;
 
 const ENEMY_PADDING: u32 = 2;
