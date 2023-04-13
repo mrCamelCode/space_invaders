@@ -1,4 +1,4 @@
-use crate::{make_bullet, BulletHitPayload, BulletType, MSG_BULLET_HIT};
+use crate::{make_bullet, BulletHitPayload, BulletType, MSG_BULLET_HIT, MSG_RESET};
 
 use thomas::core::{
     Behaviour, BehaviourUtils, Coords, CustomBehaviour, GameCommand, Message, Timer, Transform,
@@ -14,12 +14,14 @@ const SHOOT_KEY: Keycode = Keycode::Space;
 pub struct PlayerCombatBehaviour {
     lives: u8,
     fire_timer: Timer,
+    should_reset: bool,
 }
 impl PlayerCombatBehaviour {
     pub fn new() -> Self {
         Self {
             lives: MAX_LIVES,
             fire_timer: Timer::new(),
+            should_reset: false,
         }
     }
 
@@ -29,7 +31,9 @@ impl PlayerCombatBehaviour {
 }
 impl CustomBehaviour for PlayerCombatBehaviour {
     fn init(&mut self, _: &mut BehaviourUtils) {
-        self.fire_timer.start();
+        self.lives = MAX_LIVES;
+
+        self.fire_timer.restart();
     }
 
     fn update(&mut self, utils: &mut BehaviourUtils) {
@@ -56,16 +60,25 @@ impl CustomBehaviour for PlayerCombatBehaviour {
 
             self.fire_timer.restart();
         }
+
+        if self.should_reset {
+            self.init(utils);
+
+            self.should_reset = false;
+        }
     }
 
     fn on_message(&mut self, message: &Message<Box<dyn Any>>) {
         match message.typ.as_str() {
             MSG_BULLET_HIT => {
                 if let Some(payload) = Message::<BulletHitPayload>::get_payload(message) {
-                    if payload.bullet_type == BulletType::Enemy {
+                    if payload.bullet_type == BulletType::Enemy && self.lives > 0 {
                         self.lives -= 1;
                     }
                 }
+            }
+            MSG_RESET => {
+                self.should_reset = true;
             }
             _ => (),
         }

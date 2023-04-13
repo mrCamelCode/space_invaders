@@ -5,14 +5,21 @@ use thomas::core::{
 use thomas::core::{Dimensions2d, Transform};
 
 use crate::{
-    EnemySpawnerBehaviour, PlayerCombatBehaviour, PlayerLifeDisplayBehaviour, PlayerMoveBehaviour,
-    ENEMY_SPAWNER_ID, PLAYER_DISPLAY_CHAR, PLAYER_ID, SCREEN_HEIGHT, SCREEN_WIDTH,
+    EnemySpawnerBehaviour, GameManagerBehaviour, PlayerCombatBehaviour, PlayerLifeDisplayBehaviour,
+    PlayerMoveBehaviour, ENEMY_SPAWNER_ID, GAME_MANAGER_ID, PLAYER_DISPLAY_CHAR, PLAYER_ID,
+    SCREEN_HEIGHT, SCREEN_WIDTH,
 };
 
 pub fn run() {
     let mut game = Game::new(GameConfig {
         press_escape_to_quit: true,
+        max_frame_rate: 60,
     });
+
+    game.add_entity(
+        Entity::new_with_id("Game Manager", Transform::default(), GAME_MANAGER_ID),
+        BehaviourList::from(vec![Box::new(GameManagerBehaviour::new())]),
+    );
 
     game.add_entity(
         Entity::new_with_id("Player", Transform::default(), PLAYER_ID),

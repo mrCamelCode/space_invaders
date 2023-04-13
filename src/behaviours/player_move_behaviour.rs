@@ -1,8 +1,9 @@
-use thomas::core::{Behaviour, BehaviourUtils, Coords, CustomBehaviour, Timer};
+use thomas::core::{Behaviour, BehaviourUtils, Coords, CustomBehaviour, Message, Timer};
 use thomas::Behaviour;
 use thomas::Keycode;
 
 use crate::constants::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::MSG_RESET;
 
 const MOVE_WAIT_TIME_MILLIS: u128 = 100;
 
@@ -14,15 +15,25 @@ const PLAYER_Y_OFFSET: u8 = 2;
 #[derive(Behaviour, Clone)]
 pub struct PlayerMoveBehaviour {
     move_timer: Timer,
+    should_reset: bool,
 }
 impl PlayerMoveBehaviour {
     pub fn new() -> Self {
         Self {
             move_timer: Timer::new(),
+            should_reset: false,
         }
     }
 
-    pub fn perform_movement(&mut self, utils: &mut BehaviourUtils) {
+    fn init_position(&mut self, utils: &mut BehaviourUtils) {
+        utils.entity.transform_mut().move_to(&Coords::new(
+            SCREEN_WIDTH as f64 / 2.0,
+            SCREEN_HEIGHT as f64 - PLAYER_Y_OFFSET as f64,
+            0.0,
+        ));
+    }
+
+    fn perform_movement(&mut self, utils: &mut BehaviourUtils) {
         let BehaviourUtils {
             services, entity, ..
         } = utils;
@@ -53,7 +64,7 @@ impl PlayerMoveBehaviour {
         }
     }
 
-    pub fn clamp_position(&mut self, utils: &mut BehaviourUtils) {
+    fn clamp_position(&mut self, utils: &mut BehaviourUtils) {
         let BehaviourUtils { entity, .. } = utils;
 
         let current_coords = entity.transform().coords().clone();
@@ -75,18 +86,29 @@ impl PlayerMoveBehaviour {
 }
 impl CustomBehaviour for PlayerMoveBehaviour {
     fn init(&mut self, utils: &mut BehaviourUtils) {
-        utils.entity.transform_mut().move_to(&Coords::new(
-            SCREEN_WIDTH as f64 / 2.0,
-            SCREEN_HEIGHT as f64 - PLAYER_Y_OFFSET as f64,
-            0.0,
-        ));
+        self.init_position(utils);
 
-        self.move_timer.start();
+        self.move_timer.restart();
     }
 
     fn update(&mut self, utils: &mut BehaviourUtils) {
         self.perform_movement(utils);
 
         self.clamp_position(utils);
+
+        if self.should_reset {
+            self.init(utils);
+
+            self.should_reset = false;
+        }
+    }
+
+    fn on_message(&mut self, message: &Message<Box<dyn Any>>) {
+        match message.typ.as_str() {
+            MSG_RESET => {
+                self.should_reset = true;
+            }
+            _ => (),
+        }
     }
 }
