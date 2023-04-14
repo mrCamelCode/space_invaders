@@ -113,7 +113,7 @@ impl EnemySpawnerBehaviour {
     }
 }
 impl CustomBehaviour for EnemySpawnerBehaviour {
-    fn init(&mut self, utils: &mut BehaviourUtils) {
+    fn init(&mut self, _: &mut BehaviourUtils) {
         self.enemy_move_timer.start();
     }
 

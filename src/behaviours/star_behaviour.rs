@@ -17,7 +17,7 @@ impl StarBehaviour {
     }
 }
 impl CustomBehaviour for StarBehaviour {
-    fn init(&mut self, utils: &mut thomas::core::BehaviourUtils) {
+    fn init(&mut self, _: &mut thomas::core::BehaviourUtils) {
         self.move_timer.start();
     }
 
