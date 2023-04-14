@@ -4,6 +4,7 @@ use thomas::core::{
 };
 use thomas::core::{Dimensions2d, Transform};
 
+use crate::behaviours::StarSpawnerBehaviour;
 use crate::{
     EnemySpawnerBehaviour, GameManagerBehaviour, PlayerCombatBehaviour, PlayerLifeDisplayBehaviour,
     PlayerMoveBehaviour, ENEMY_SPAWNER_ID, GAME_MANAGER_ID, PLAYER_DISPLAY_CHAR, PLAYER_ID,
@@ -37,6 +38,11 @@ pub fn run() {
     game.add_entity(
         Entity::new_with_id("Enemy Spawner", Transform::default(), ENEMY_SPAWNER_ID),
         BehaviourList::from(vec![Box::new(EnemySpawnerBehaviour::new())]),
+    );
+
+    game.add_entity(
+        Entity::new("Star Spawner", Transform::default()),
+        BehaviourList::from(vec![Box::new(StarSpawnerBehaviour::new())]),
     );
 
     game.start(&mut TerminalRenderer::new(TerminalRendererConfig {

@@ -8,5 +8,8 @@ pub const PLAYER_DISPLAY_CHAR: char = '^';
 
 pub const ENEMY_SPAWNER_ID: &str = "enemy-spawner";
 
+pub const BACKGROUND_LAYER: i32 = -10;
 pub const BULLET_LAYER: i32 = -1;
 pub const UI_LAYER: i32 = 10;
+
+pub const STAR_WAIT_TIME_MILLIS: u128 = 500;

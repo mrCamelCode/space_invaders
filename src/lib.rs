@@ -1,9 +1,9 @@
 mod behaviours;
 mod constants;
-mod entities;
+mod entity_generators;
 mod functions;
 
-pub use behaviours::*;
-pub use constants::*;
-pub use entities::*;
+pub(crate) use behaviours::*;
+pub(crate) use constants::*;
+pub(crate) use entity_generators::*;
 pub use functions::*;

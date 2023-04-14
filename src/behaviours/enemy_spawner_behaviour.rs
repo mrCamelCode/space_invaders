@@ -86,7 +86,7 @@ impl EnemySpawnerBehaviour {
             false
         };
 
-        let displacement: Coords = if thread_rng().gen_range(0..=1) == 0 && can_move_right {
+        let displacement: Coords = if thread_rng().gen_range(0..=1 as u8) == 0 && can_move_right {
             Coords::right()
         } else if can_move_left {
             Coords::left()

@@ -12,6 +12,9 @@ mod bullet_behaviour;
 
 mod text_behaviour;
 
+mod star_spawner_behaviour;
+mod star_behaviour;
+
 mod messages;
 
 pub use game_manager_behaviour::*;
@@ -27,5 +30,8 @@ pub use enemy_spawner_behaviour::*;
 pub use bullet_behaviour::*;
 
 pub use text_behaviour::*;
+
+pub use star_spawner_behaviour::*;
+pub use star_behaviour::*;
 
 pub use messages::*;
