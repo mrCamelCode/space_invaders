@@ -1,7 +1,7 @@
 use thomas::{
     core::{
         Behaviour, BehaviourList, BehaviourUtils, Coords, CustomBehaviour, Entity, GameCommand,
-        Layer, Message, TerminalRenderable, Transform, World,
+        Layer, Message, TerminalRenderable, Transform,
     },
     Behaviour,
 };
