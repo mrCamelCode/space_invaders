@@ -14,7 +14,7 @@ use crate::{
 pub fn run() {
     let mut game = Game::new(GameConfig {
         press_escape_to_quit: true,
-        max_frame_rate: 60,
+        max_frame_rate: 15,
     });
 
     game.add_entity(

@@ -15,7 +15,7 @@ pub fn make_bullet(
 
     let display = match bullet_type {
         BulletType::Player => '.',
-        BulletType::Enemy => 'o',
+        BulletType::Enemy => '"',
     };
 
     let behaviours = BehaviourList::from(vec![
