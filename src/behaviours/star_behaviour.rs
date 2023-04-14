@@ -1,11 +1,9 @@
 use thomas::{
-    core::{Behaviour, Coords, CustomBehaviour, Timer},
+    core::{Behaviour, Coords, CustomBehaviour, GameCommand, Timer},
     Behaviour,
 };
 
-use crate::constants::STAR_WAIT_TIME_MILLIS;
-
-
+use crate::constants::{SCREEN_HEIGHT, STAR_WAIT_TIME_MILLIS};
 
 #[derive(Behaviour, Clone)]
 pub struct StarBehaviour {
@@ -28,6 +26,12 @@ impl CustomBehaviour for StarBehaviour {
             utils.entity.transform_mut().move_by(&Coords::up());
 
             self.move_timer.restart();
+        }
+
+        if utils.entity.transform().coords().y() >= SCREEN_HEIGHT as f64 {
+            utils
+                .commands
+                .issue(GameCommand::DestroyEntity(utils.entity.id().to_string()));
         }
     }
 }
