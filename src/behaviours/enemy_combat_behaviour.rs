@@ -7,12 +7,12 @@ use thomas::core::{
 use thomas::Behaviour;
 
 use crate::{
-    make_bullet, BulletHitPayload, BulletType, ENEMY_SPAWNER_ID, GAME_MANAGER_ID, MSG_BULLET_HIT,
-    MSG_ENEMY_DIED, MSG_PLAYER_KILLED_ENEMY,
+    make_bullet, BulletHitPayload, BulletType, EnemyDiedPayload, ENEMY_SPAWNER_ID, GAME_MANAGER_ID,
+    MSG_BULLET_HIT, MSG_ENEMY_DIED, MSG_PLAYER_KILLED_ENEMY, MSG_MOVE_ENEMY, MoveEnemyPayload,
 };
 
 const CHANCE_TO_SHOOT: u8 = 50;
-const SHOOT_ROLL_WAIT_TIME_RANGE_MILLIS: RangeInclusive<u128> = 1500..=2500;
+const SHOOT_ROLL_WAIT_TIME_RANGE_MILLIS: RangeInclusive<u128> = 2500..=3500;
 
 #[derive(Behaviour, Clone)]
 pub struct EnemyCombatBehaviour {
@@ -20,6 +20,7 @@ pub struct EnemyCombatBehaviour {
     shoot_wait_timer: Timer,
     shoot_roll_wait_time: u128,
     killed_by_player: bool,
+    move_by: Coords,
 }
 impl EnemyCombatBehaviour {
     pub fn new() -> Self {
@@ -28,6 +29,7 @@ impl EnemyCombatBehaviour {
             shoot_wait_timer: Timer::new(),
             shoot_roll_wait_time: thread_rng().gen_range(SHOOT_ROLL_WAIT_TIME_RANGE_MILLIS),
             killed_by_player: false,
+            move_by: Coords::zero(),
         }
     }
 
@@ -70,6 +72,12 @@ impl CustomBehaviour for EnemyCombatBehaviour {
 
             self.shoot_wait_timer.restart();
         }
+
+        if self.move_by != Coords::zero() {
+            utils.entity.transform_mut().move_by(&self.move_by);
+
+            self.move_by = Coords::zero();
+        }
     }
 
     fn on_message(&mut self, message: &Message<Box<dyn Any>>) {
@@ -82,6 +90,11 @@ impl CustomBehaviour for EnemyCombatBehaviour {
                     }
                 }
             }
+            MSG_MOVE_ENEMY => {
+                if let Some(payload) = Message::<MoveEnemyPayload>::get_payload(message) {
+                    self.move_by = payload.displacement;
+                }
+            }
             _ => (),
         }
     }
@@ -89,7 +102,12 @@ impl CustomBehaviour for EnemyCombatBehaviour {
     fn on_destroy(&mut self, utils: &mut BehaviourUtils) {
         utils.commands.issue(GameCommand::SendMessage {
             entity_id: ENEMY_SPAWNER_ID.to_string(),
-            message: Message::new(MSG_ENEMY_DIED, Box::new(0)),
+            message: Message::new(
+                MSG_ENEMY_DIED,
+                Box::new(EnemyDiedPayload {
+                    enemy_id: utils.entity.id().to_string(),
+                }),
+            ),
         });
 
         if self.killed_by_player {

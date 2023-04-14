@@ -5,7 +5,7 @@ use thomas::{get_behaviour_name, Behaviour};
 
 use crate::{
     make_text, ChangeTextPayload, PlayerCombatBehaviour, ENEMY_SPAWNER_ID, MSG_CHANGE_TEXT,
-    MSG_ENEMY_DIED, MSG_PLAYER_KILLED_ENEMY, MSG_RESET, PLAYER_ID, SCREEN_HEIGHT,
+    MSG_PLAYER_KILLED_ENEMY, MSG_RESET, PLAYER_ID,
 };
 
 const ENEMY_KILL_SCORE: u32 = 10;
