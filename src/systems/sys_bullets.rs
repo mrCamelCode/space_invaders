@@ -4,8 +4,8 @@ use thomas::{
 };
 
 use crate::{
-    Bullet, Player, ENEMY_BULLET_COLLISION_LAYER, ENEMY_COLLISION_LAYER,
-    PLAYER_BULLET_COLLISION_LAYER, PLAYER_COLLISION_LAYER, SCREEN_HEIGHT,
+    Bullet, Player, Scorekeeper, ENEMY_BULLET_COLLISION_LAYER, ENEMY_COLLISION_LAYER,
+    ENEMY_POINT_VALUE, PLAYER_BULLET_COLLISION_LAYER, PLAYER_COLLISION_LAYER, SCREEN_HEIGHT,
 };
 
 const BULLET_MOVE_WAIT_TIME_MILLIS: u128 = 50;
@@ -24,18 +24,20 @@ impl SystemsGenerator for BulletSystemsGenerator {
             (
                 EVENT_UPDATE,
                 System::new(
-                    vec![Query::new().has_where::<TerminalCollision>(|collision| {
-                        let has_player_bullet = collision
-                            .bodies
-                            .iter()
-                            .any(|(_, collider)| collider.layer == PLAYER_BULLET_COLLISION_LAYER);
-                        let has_enemy = collision
-                            .bodies
-                            .iter()
-                            .any(|(_, collider)| collider.layer == ENEMY_COLLISION_LAYER);
+                    vec![
+                        Query::new().has_where::<TerminalCollision>(|collision| {
+                            let has_player_bullet = collision.bodies.iter().any(|(_, collider)| {
+                                collider.layer == PLAYER_BULLET_COLLISION_LAYER
+                            });
+                            let has_enemy = collision
+                                .bodies
+                                .iter()
+                                .any(|(_, collider)| collider.layer == ENEMY_COLLISION_LAYER);
 
-                        has_player_bullet && has_enemy
-                    })],
+                            has_player_bullet && has_enemy
+                        }),
+                        Query::new().has::<Scorekeeper>(),
+                    ],
                     player_bullet_hits_enemy_collisions,
                 ),
             ),
@@ -96,7 +98,9 @@ fn move_bullets(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
 }
 
 fn player_bullet_hits_enemy_collisions(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
-    if let [bullet_collision_results, ..] = &results[..] {
+    if let [bullet_collision_results, scorekeeper_results, ..] = &results[..] {
+        let mut scorekeeper = scorekeeper_results[0].components().get_mut::<Scorekeeper>();
+
         for bullet_collision in bullet_collision_results {
             let collision = bullet_collision.components().get::<TerminalCollision>();
 
@@ -109,7 +113,7 @@ fn player_bullet_hits_enemy_collisions(results: Vec<QueryResultList>, util: &Sys
                     .0,
             ));
 
-            // TODO: Award the enemy points.
+            scorekeeper.score += ENEMY_POINT_VALUE;
         }
     }
 }

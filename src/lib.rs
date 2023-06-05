@@ -12,7 +12,7 @@ pub use prefabs::*;
 
 use thomas::{
     Dimensions2d, Game, GameOptions, Renderer, TerminalCollisionsSystemsGenerator,
-    TerminalRendererOptions,
+    TerminalRendererOptions, TerminalUiRendererSystemsGenerator,
 };
 
 pub fn run() {
@@ -21,6 +21,8 @@ pub fn run() {
         press_escape_to_quit: false,
     })
     .add_systems_from_generator(TerminalCollisionsSystemsGenerator::new())
+    .add_systems_from_generator(TerminalUiRendererSystemsGenerator::new())
+    .add_systems_from_generator(HudSystemsGenerator {})
     .add_systems_from_generator(PlayerSystemsGenerator {})
     .add_systems_from_generator(BulletSystemsGenerator {})
     .add_systems_from_generator(EnemySystemsGenerator {})

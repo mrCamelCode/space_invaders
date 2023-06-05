@@ -18,3 +18,4 @@ pub const ENEMY_DISPLAY_CHAR: char = '@';
 pub const ENEMY_COLLISION_LAYER: Layer = Layer(2);
 pub const ENEMY_BULLET_DISPLAY_CHAR: char = 'o';
 pub const ENEMY_BULLET_COLLISION_LAYER: Layer = Layer(4);
+pub const ENEMY_POINT_VALUE: u64 = 100;

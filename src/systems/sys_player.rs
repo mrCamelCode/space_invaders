@@ -7,8 +7,8 @@ use thomas::{
 };
 
 use crate::{
-    make_bullet, BulletType, Combat, Player, PlayerMovement, PLAYER_COLLISION_LAYER,
-    PLAYER_DISPLAY_CHAR, SCREEN_WIDTH, UI_Y_START_POSITION, PLAYER_STARTING_LIVES,
+    make_bullet, BulletType, Combat, Player, PlayerMovement, Scorekeeper, PLAYER_COLLISION_LAYER,
+    PLAYER_DISPLAY_CHAR, PLAYER_STARTING_LIVES, SCREEN_WIDTH, UI_Y_START_POSITION,
 };
 
 const MOVE_WAIT_TIME_MILLIS: u128 = 100;
@@ -25,7 +25,7 @@ impl SystemsGenerator for PlayerSystemsGenerator {
                 System::new(vec![], |_, util| {
                     util.commands().issue(GameCommand::AddEntity(vec![
                         Box::new(Player {
-                            lives: PLAYER_STARTING_LIVES
+                            lives: PLAYER_STARTING_LIVES,
                         }),
                         Box::new(PlayerMovement {
                             move_timer: Timer::start_new(),
@@ -48,6 +48,13 @@ impl SystemsGenerator for PlayerSystemsGenerator {
                             layer: PLAYER_COLLISION_LAYER,
                         }),
                     ]));
+
+                    util.commands()
+                        .issue(GameCommand::AddEntity(vec![Box::new(Scorekeeper {
+                            score: 0,
+                            // TODO: Probably load from FS.
+                            high_score: 300,
+                        })]))
                 }),
             ),
             (
