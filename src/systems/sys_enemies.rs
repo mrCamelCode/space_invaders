@@ -3,7 +3,7 @@ use thomas::{
     EVENT_UPDATE,
 };
 
-use crate::{make_enemy, Enemy, SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::{make_enemy, Enemy, SCREEN_WIDTH};
 
 const ENEMY_GRID_WIDTH: u64 = 10;
 const ENEMY_GRID_HEIGHT: u64 = 4;
