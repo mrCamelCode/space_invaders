@@ -1,15 +1,21 @@
-pub const SCREEN_WIDTH: u16 = 50;
-pub const SCREEN_HEIGHT: u16 = 20;
+use thomas::Layer;
 
-pub const GAME_MANAGER_ID: &str = "game-manager";
+pub const SCREEN_WIDTH: u64 = 50;
+pub const SCREEN_HEIGHT: u64 = 20;
 
-pub const PLAYER_ID: &str = "player";
+pub const UI_Y_START_POSITION: u64 = 17;
+
 pub const PLAYER_DISPLAY_CHAR: char = 'A';
-
-pub const ENEMY_SPAWNER_ID: &str = "enemy-spawner";
+pub const PLAYER_COLLISION_LAYER: Layer = Layer(1);
+pub const PLAYER_BULLET_DISPLAY_CHAR: char = '"';
+pub const PLAYER_BULLET_COLLISION_LAYER: Layer = Layer(3);
+pub const PLAYER_STARTING_LIVES: u8 = 3;
 
 pub const BACKGROUND_LAYER: i32 = -10;
 pub const BULLET_LAYER: i32 = -1;
-pub const UI_LAYER: i32 = 10;
 
-pub const STAR_WAIT_TIME_MILLIS: u128 = 500;
+pub const ENEMY_DISPLAY_CHAR: char = '@';
+pub const ENEMY_COLLISION_LAYER: Layer = Layer(2);
+pub const ENEMY_BULLET_DISPLAY_CHAR: char = 'o';
+pub const ENEMY_BULLET_COLLISION_LAYER: Layer = Layer(4);
+pub const ENEMY_POINT_VALUE: u64 = 100;
