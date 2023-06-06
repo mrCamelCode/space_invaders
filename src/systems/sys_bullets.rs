@@ -1,5 +1,5 @@
 use thomas::{
-    GameCommand, Query, QueryResultList, System, SystemExtraArgs, SystemsGenerator,
+    GameCommand, GameCommandsArg, Query, QueryResultList, System, SystemsGenerator,
     TerminalCollision, TerminalTransform, EVENT_UPDATE,
 };
 
@@ -77,14 +77,15 @@ impl SystemsGenerator for BulletSystemsGenerator {
     }
 }
 
-fn move_bullets(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
+fn move_bullets(results: Vec<QueryResultList>, commands: GameCommandsArg) {
     if let [bullets_query, ..] = &results[..] {
         for bullet_result in bullets_query {
             let mut bullet = bullet_result.components().get_mut::<Bullet>();
             let mut transform = bullet_result.components().get_mut::<TerminalTransform>();
 
             if transform.coords.y() < 0 || transform.coords.y() > SCREEN_HEIGHT as i64 {
-                util.commands()
+                commands
+                    .borrow_mut()
                     .issue(GameCommand::DestroyEntity(*bullet_result.entity()));
             }
 
@@ -97,14 +98,14 @@ fn move_bullets(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
     }
 }
 
-fn player_bullet_hits_enemy_collisions(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
+fn player_bullet_hits_enemy_collisions(results: Vec<QueryResultList>, commands: GameCommandsArg) {
     if let [bullet_collision_results, scorekeeper_results, ..] = &results[..] {
         let mut scorekeeper = scorekeeper_results[0].components().get_mut::<Scorekeeper>();
 
         for bullet_collision in bullet_collision_results {
             let collision = bullet_collision.components().get::<TerminalCollision>();
 
-            util.commands().issue(GameCommand::DestroyEntity(
+            commands.borrow_mut().issue(GameCommand::DestroyEntity(
                 collision
                     .bodies
                     .iter()
@@ -118,22 +119,24 @@ fn player_bullet_hits_enemy_collisions(results: Vec<QueryResultList>, util: &Sys
     }
 }
 
-fn enemy_bullet_hits_player_collisions(results: Vec<QueryResultList>, _: &SystemExtraArgs) {
+fn enemy_bullet_hits_player_collisions(results: Vec<QueryResultList>, _: GameCommandsArg) {
     if let [bullet_collision_results, player_results, ..] = &results[..] {
         let mut player = player_results[0].components().get_mut::<Player>();
 
         for _ in bullet_collision_results {
-            player.lives -= 1;
+            if player.lives > 0 {
+                player.lives -= 1;
+            }
         }
     }
 }
 
-fn cleanup_bullets_on_collision(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
+fn cleanup_bullets_on_collision(results: Vec<QueryResultList>, commands: GameCommandsArg) {
     if let [bullet_collision_results, ..] = &results[..] {
         for bullet_collision in bullet_collision_results {
             let collision = bullet_collision.components().get::<TerminalCollision>();
 
-            util.commands().issue(GameCommand::DestroyEntity(
+            commands.borrow_mut().issue(GameCommand::DestroyEntity(
                 collision
                     .bodies
                     .iter()

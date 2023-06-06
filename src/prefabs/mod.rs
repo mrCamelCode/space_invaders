@@ -28,7 +28,7 @@ pub fn make_bullet(
                 BulletType::Player => PLAYER_BULLET_DISPLAY_CHAR,
                 BulletType::Enemy => ENEMY_BULLET_DISPLAY_CHAR,
             },
-            layer: Layer::base(),
+            layer: Layer::below(&Layer::base()),
         }),
         Box::new(TerminalCollider {
             is_active: true,
@@ -42,7 +42,9 @@ pub fn make_bullet(
 
 pub fn make_enemy(coords: IntCoords2d) -> Vec<Box<dyn Component>> {
     vec![
-        Box::new(Enemy {}),
+        Box::new(Enemy {
+            shoot_timer: Timer::start_new(),
+        }),
         Box::new(TerminalTransform { coords }),
         Box::new(TerminalRenderer {
             display: ENEMY_DISPLAY_CHAR,

@@ -6,6 +6,7 @@ use thomas::{
 use crate::{Player, Scorekeeper, PLAYER_DISPLAY_CHAR};
 
 const LIVES_TAG_ID: &str = "lives-tag";
+const LEVEL_TAG_ID: &str = "level-tag";
 const SCORE_TAG_ID: &str = "score-tag";
 const HIGH_SCORE_TAG_ID: &str = "high-score-tag";
 
@@ -15,8 +16,8 @@ impl SystemsGenerator for HudSystemsGenerator {
         vec![
             (
                 EVENT_INIT,
-                System::new(vec![], |_, util| {
-                    util.commands().issue(GameCommand::AddEntity(vec![
+                System::new(vec![], |_, commands| {
+                    commands.borrow_mut().issue(GameCommand::AddEntity(vec![
                         Box::new(Text {
                             anchor: UiAnchor::BottomLeft,
                             justification: Alignment::Left,
@@ -29,7 +30,20 @@ impl SystemsGenerator for HudSystemsGenerator {
                         }),
                     ]));
 
-                    util.commands().issue(GameCommand::AddEntity(vec![
+                    commands.borrow_mut().issue(GameCommand::AddEntity(vec![
+                        Box::new(Text {
+                            anchor: UiAnchor::BottomLeft,
+                            justification: Alignment::Left,
+                            offset: IntCoords2d::down(),
+                            value: String::from(""),
+                        }),
+                        Box::new(Identity {
+                            id: String::from(LEVEL_TAG_ID),
+                            name: String::from(""),
+                        }),
+                    ]));
+
+                    commands.borrow_mut().issue(GameCommand::AddEntity(vec![
                         Box::new(Text {
                             anchor: UiAnchor::BottomRight,
                             justification: Alignment::Right,
@@ -42,7 +56,7 @@ impl SystemsGenerator for HudSystemsGenerator {
                         }),
                     ]));
 
-                    util.commands().issue(GameCommand::AddEntity(vec![
+                    commands.borrow_mut().issue(GameCommand::AddEntity(vec![
                         Box::new(Text {
                             anchor: UiAnchor::BottomRight,
                             justification: Alignment::Right,
@@ -64,6 +78,9 @@ impl SystemsGenerator for HudSystemsGenerator {
                             .has_where::<Identity>(|id| id.id == LIVES_TAG_ID)
                             .has::<Text>(),
                         Query::new()
+                            .has_where::<Identity>(|id| id.id == LEVEL_TAG_ID)
+                            .has::<Text>(),
+                        Query::new()
                             .has_where::<Identity>(|id| id.id == SCORE_TAG_ID)
                             .has::<Text>(),
                         Query::new()
@@ -73,7 +90,7 @@ impl SystemsGenerator for HudSystemsGenerator {
                         Query::new().has::<Scorekeeper>(),
                     ],
                     |results, _| {
-                        if let [lives_tag_results, score_tag_results, high_score_tag_results, player_results, scorekeeper_results, ..] =
+                        if let [lives_tag_results, level_tag_results, score_tag_results, high_score_tag_results, player_results, scorekeeper_results, ..] =
                             &results[..]
                         {
                             let player = player_results[0].components().get::<Player>();
@@ -84,6 +101,7 @@ impl SystemsGenerator for HudSystemsGenerator {
                             let mut score_tag = score_tag_results[0].components().get_mut::<Text>();
                             let mut high_score_tag =
                                 high_score_tag_results[0].components().get_mut::<Text>();
+                            let mut level_tag = level_tag_results.get_only_mut::<Text>();
 
                             lives_tag.value = format!(
                                 "Lives: {}",
@@ -92,6 +110,8 @@ impl SystemsGenerator for HudSystemsGenerator {
                                     .collect::<Vec<String>>()
                                     .join("")
                             );
+
+                            level_tag.value = format!("Level: {}", scorekeeper.level);
 
                             score_tag.value = format!("Score: {}", scorekeeper.score);
 

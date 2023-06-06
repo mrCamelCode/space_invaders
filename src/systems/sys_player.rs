@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::{cell::Ref, collections::HashMap};
 
 use thomas::{
-    GameCommand, IntCoords2d, Keycode, Layer, Query, QueryResultList, System, SystemExtraArgs,
-    SystemsGenerator, TerminalCollider, TerminalRenderer, TerminalTransform, Timer, EVENT_INIT,
-    EVENT_UPDATE,
+    GameCommand, GameCommandsArg, Input, IntCoords2d, Keycode, Layer, Query, QueryResultList,
+    System, SystemsGenerator, TerminalCollider, TerminalRenderer, TerminalTransform, Timer,
+    EVENT_INIT, EVENT_UPDATE,
 };
 
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
     PLAYER_DISPLAY_CHAR, PLAYER_STARTING_LIVES, SCREEN_WIDTH, UI_Y_START_POSITION,
 };
 
-const MOVE_WAIT_TIME_MILLIS: u128 = 100;
+const MOVE_WAIT_TIME_MILLIS: u128 = 50;
 const SHOOT_WAIT_TIME_MILLIS: u128 = 100;
 
 type MovementToDirectionMap = HashMap<Keycode, IntCoords2d>;
@@ -22,8 +22,8 @@ impl SystemsGenerator for PlayerSystemsGenerator {
         vec![
             (
                 EVENT_INIT,
-                System::new(vec![], |_, util| {
-                    util.commands().issue(GameCommand::AddEntity(vec![
+                System::new(vec![], |_, commands| {
+                    commands.borrow_mut().issue(GameCommand::AddEntity(vec![
                         Box::new(Player {
                             lives: PLAYER_STARTING_LIVES,
                         }),
@@ -49,30 +49,39 @@ impl SystemsGenerator for PlayerSystemsGenerator {
                         }),
                     ]));
 
-                    util.commands()
+                    commands
+                        .borrow_mut()
                         .issue(GameCommand::AddEntity(vec![Box::new(Scorekeeper {
                             score: 0,
                             // TODO: Probably load from FS.
                             high_score: 300,
+                            level: 0,
                         })]))
                 }),
             ),
             (
                 EVENT_UPDATE,
                 System::new(
-                    vec![Query::new()
-                        .has::<PlayerMovement>()
-                        .has::<TerminalTransform>()],
+                    vec![
+                        Query::new()
+                            .has::<PlayerMovement>()
+                            .has::<TerminalTransform>(),
+                        Query::new().has::<Input>(),
+                    ],
                     movement,
                 ),
             ),
             (
                 EVENT_UPDATE,
                 System::new(
-                    vec![Query::new()
-                        .has::<Player>()
-                        .has::<TerminalTransform>()
-                        .has::<Combat>()],
+                    vec![
+                        Query::new()
+                            .has::<Player>()
+                            .has::<TerminalTransform>()
+                            .has::<Combat>(),
+                        Query::new()
+                            .has_where::<Input>(|input| input.is_key_pressed(&Keycode::Space)),
+                    ],
                     combat,
                 ),
             ),
@@ -80,35 +89,34 @@ impl SystemsGenerator for PlayerSystemsGenerator {
     }
 }
 
-fn movement(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
-    if let [player_query, ..] = &results[..] {
-        for player_result in player_query {
-            let mut movement = player_result.components().get_mut::<PlayerMovement>();
-            let mut transform = player_result.components().get_mut::<TerminalTransform>();
+fn movement(results: Vec<QueryResultList>, _: GameCommandsArg) {
+    if let [player_results, input_results, ..] = &results[..] {
+        let input = input_results.get_only::<Input>();
+        let mut movement = player_results.get_only_mut::<PlayerMovement>();
+        let mut transform = player_results.get_only_mut::<TerminalTransform>();
 
-            let movement_input_to_direction: MovementToDirectionMap = HashMap::from([
-                (Keycode::A, IntCoords2d::left()),
-                (Keycode::D, IntCoords2d::right()),
-            ]);
+        let movement_input_to_direction: MovementToDirectionMap = HashMap::from([
+            (Keycode::A, IntCoords2d::left()),
+            (Keycode::D, IntCoords2d::right()),
+        ]);
 
-            if movement.move_timer.elapsed_millis() >= MOVE_WAIT_TIME_MILLIS {
-                if let Some(movement_direction) =
-                    get_movement_direction(util, &movement_input_to_direction)
-                {
-                    transform.coords += *movement_direction;
+        if movement.move_timer.elapsed_millis() >= MOVE_WAIT_TIME_MILLIS {
+            if let Some(movement_direction) =
+                get_movement_direction(input, &movement_input_to_direction)
+            {
+                transform.coords += *movement_direction;
 
-                    movement.move_timer.restart();
-                }
+                movement.move_timer.restart();
             }
         }
     }
 }
 
 fn get_movement_direction<'a>(
-    util: &SystemExtraArgs,
+    input: Ref<Input>,
     movement_input_to_direction: &'a MovementToDirectionMap,
 ) -> Option<&'a IntCoords2d> {
-    if let Some(pressed_key) = get_pressed_movement_key(util, movement_input_to_direction) {
+    if let Some(pressed_key) = get_pressed_movement_key(input, movement_input_to_direction) {
         return movement_input_to_direction.get(pressed_key);
     }
 
@@ -116,30 +124,32 @@ fn get_movement_direction<'a>(
 }
 
 fn get_pressed_movement_key<'a>(
-    util: &SystemExtraArgs,
+    input: Ref<Input>,
     movement_input_to_direction: &'a MovementToDirectionMap,
 ) -> Option<&'a Keycode> {
     movement_input_to_direction
         .keys()
-        .find(|key| util.input().is_key_pressed(key))
+        .find(|key| input.is_key_pressed(key))
 }
 
-fn combat(results: Vec<QueryResultList>, util: &SystemExtraArgs) {
-    if let [player_query, ..] = &results[..] {
-        for player_result in player_query {
-            let transform = player_result.components().get::<TerminalTransform>();
-            let mut combat = player_result.components().get_mut::<Combat>();
+fn combat(results: Vec<QueryResultList>, commands: GameCommandsArg) {
+    if let [player_query, input_with_shoot_button_pressed_results, ..] = &results[..] {
+        if input_with_shoot_button_pressed_results.len() > 0 {
+            for player_result in player_query {
+                let transform = player_result.components().get::<TerminalTransform>();
+                let mut combat = player_result.components().get_mut::<Combat>();
 
-            if util.input().is_key_pressed(&Keycode::Space)
-                && combat.shoot_timer.elapsed_millis() >= SHOOT_WAIT_TIME_MILLIS
-            {
-                util.commands().issue(GameCommand::AddEntity(make_bullet(
-                    transform.coords + IntCoords2d::down(),
-                    IntCoords2d::down(),
-                    BulletType::Player,
-                )));
+                if combat.shoot_timer.elapsed_millis() >= SHOOT_WAIT_TIME_MILLIS {
+                    commands
+                        .borrow_mut()
+                        .issue(GameCommand::AddEntity(make_bullet(
+                            transform.coords + IntCoords2d::down(),
+                            IntCoords2d::down(),
+                            BulletType::Player,
+                        )));
 
-                combat.shoot_timer.restart();
+                    combat.shoot_timer.restart();
+                }
             }
         }
     }
