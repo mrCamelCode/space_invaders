@@ -65,7 +65,14 @@ impl SystemsGenerator for BulletSystemsGenerator {
                 EVENT_UPDATE,
                 System::new(
                     vec![Query::new().has_where::<TerminalCollision>(|collision| {
-                        collision.bodies.iter().any(|(_, collider)| {
+                        let are_bullets_colliding =
+                            collision.bodies.iter().any(|(_, collider)| {
+                                collider.layer == ENEMY_BULLET_COLLISION_LAYER
+                            }) && collision.bodies.iter().any(|(_, collider)| {
+                                collider.layer == PLAYER_BULLET_COLLISION_LAYER
+                            });
+
+                        !are_bullets_colliding && collision.bodies.iter().any(|(_, collider)| {
                             collider.layer == ENEMY_BULLET_COLLISION_LAYER
                                 || collider.layer == PLAYER_BULLET_COLLISION_LAYER
                         })

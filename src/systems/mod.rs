@@ -9,3 +9,6 @@ pub use sys_enemies::*;
 
 mod sys_hud;
 pub use sys_hud::*;
+
+mod sys_stars;
+pub use sys_stars::*;

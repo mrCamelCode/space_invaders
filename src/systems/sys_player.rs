@@ -1,4 +1,4 @@
-use std::{cell::Ref, collections::HashMap};
+use std::{cell::Ref, collections::HashMap, result};
 
 use thomas::{
     GameCommand, GameCommandsArg, Input, IntCoords2d, Keycode, Layer, Query, QueryResultList,
@@ -7,8 +7,9 @@ use thomas::{
 };
 
 use crate::{
-    make_bullet, BulletType, Combat, Player, PlayerMovement, Scorekeeper, PLAYER_COLLISION_LAYER,
-    PLAYER_DISPLAY_CHAR, PLAYER_STARTING_LIVES, SCREEN_WIDTH, UI_Y_START_POSITION,
+    make_bullet, Bullet, BulletType, Combat, Enemy, Player, PlayerMovement, Scorekeeper,
+    PLAYER_COLLISION_LAYER, PLAYER_DISPLAY_CHAR, PLAYER_STARTING_LIVES, SCREEN_WIDTH,
+    UI_Y_START_POSITION,
 };
 
 const MOVE_WAIT_TIME_MILLIS: u128 = 50;
@@ -53,8 +54,7 @@ impl SystemsGenerator for PlayerSystemsGenerator {
                         .borrow_mut()
                         .issue(GameCommand::AddEntity(vec![Box::new(Scorekeeper {
                             score: 0,
-                            // TODO: Probably load from FS.
-                            high_score: 300,
+                            high_score: 10000,
                             level: 0,
                         })]))
                 }),
@@ -83,6 +83,18 @@ impl SystemsGenerator for PlayerSystemsGenerator {
                             .has_where::<Input>(|input| input.is_key_pressed(&Keycode::Space)),
                     ],
                     combat,
+                ),
+            ),
+            (
+                EVENT_UPDATE,
+                System::new(
+                    vec![
+                        Query::new().has::<Player>(),
+                        Query::new().has::<Scorekeeper>(),
+                        Query::new().has::<Enemy>(),
+                        Query::new().has::<Bullet>(),
+                    ],
+                    handle_player_death,
                 ),
             ),
         ]
@@ -150,6 +162,34 @@ fn combat(results: Vec<QueryResultList>, commands: GameCommandsArg) {
 
                     combat.shoot_timer.restart();
                 }
+            }
+        }
+    }
+}
+
+fn handle_player_death(results: Vec<QueryResultList>, commands: GameCommandsArg) {
+    if let [player_results, scorekeeper_results, enemies_results, bullets_results, ..] =
+        &results[..]
+    {
+        let mut player = player_results.get_only_mut::<Player>();
+        let mut scorekeeper = scorekeeper_results.get_only_mut::<Scorekeeper>();
+
+        if player.lives == 0 {
+            scorekeeper.score = 0;
+            scorekeeper.level = 0;
+
+            player.lives = PLAYER_STARTING_LIVES;
+
+            for enemy_result in enemies_results {
+                commands
+                    .borrow_mut()
+                    .issue(GameCommand::DestroyEntity(*enemy_result.entity()));
+            }
+
+            for bullet_result in bullets_results {
+                commands
+                    .borrow_mut()
+                    .issue(GameCommand::DestroyEntity(*bullet_result.entity()));
             }
         }
     }

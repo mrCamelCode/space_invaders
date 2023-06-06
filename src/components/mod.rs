@@ -9,3 +9,6 @@ pub use comp_enemy::*;
 
 mod comp_scorekeeper;
 pub use comp_scorekeeper::*;
+
+mod comp_star;
+pub use comp_star::*;
