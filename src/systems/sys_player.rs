@@ -1,4 +1,4 @@
-use std::{cell::Ref, collections::HashMap, result};
+use std::{cell::Ref, collections::HashMap};
 
 use thomas::{
     GameCommand, GameCommandsArg, Input, IntCoords2d, Keycode, Layer, Query, QueryResultList,

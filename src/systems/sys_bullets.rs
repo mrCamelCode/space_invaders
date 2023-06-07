@@ -122,6 +122,9 @@ fn player_bullet_hits_enemy_collisions(results: Vec<QueryResultList>, commands: 
             ));
 
             scorekeeper.score += ENEMY_POINT_VALUE;
+            if scorekeeper.score > scorekeeper.high_score {
+                scorekeeper.high_score = scorekeeper.score;
+            }
         }
     }
 }
