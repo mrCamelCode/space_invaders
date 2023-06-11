@@ -134,7 +134,7 @@ fn shoot(results: Vec<QueryResultList>, commands: GameCommandsArg) {
     }
 }
 
-fn movement(results: Vec<QueryResultList>, commands: GameCommandsArg) {
+fn movement(results: Vec<QueryResultList>, _: GameCommandsArg) {
     if let [enemy_results, enemy_movement_results, enemies_at_min_x_results, enemies_at_max_x_results, ..] =
         &results[..]
     {
