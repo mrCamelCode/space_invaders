@@ -3,13 +3,13 @@ use std::{cell::Ref, collections::HashMap};
 use thomas::{
     GameCommand, GameCommandsArg, Input, IntCoords2d, Keycode, Layer, Query, QueryResultList,
     System, SystemsGenerator, TerminalCollider, TerminalRenderer, TerminalTransform, Timer,
-    EVENT_INIT, EVENT_UPDATE,
+    EVENT_INIT, EVENT_UPDATE
 };
 
 use crate::{
     make_bullet, Bullet, BulletType, Combat, Enemy, Player, PlayerMovement, Scorekeeper,
     PLAYER_COLLISION_LAYER, PLAYER_DISPLAY_CHAR, PLAYER_STARTING_LIVES, SCREEN_WIDTH,
-    UI_Y_START_POSITION,
+    UI_Y_START_POSITION, PLAYER_COLOR,
 };
 
 const MOVE_WAIT_TIME_MILLIS: u128 = 50;
@@ -43,6 +43,8 @@ impl SystemsGenerator for PlayerSystemsGenerator {
                         Box::new(TerminalRenderer {
                             display: PLAYER_DISPLAY_CHAR,
                             layer: Layer::base(),
+                            foreground_color: Some(PLAYER_COLOR),
+                            background_color: None
                         }),
                         Box::new(TerminalCollider {
                             is_active: true,
@@ -104,6 +106,7 @@ impl SystemsGenerator for PlayerSystemsGenerator {
 fn movement(results: Vec<QueryResultList>, _: GameCommandsArg) {
     if let [player_results, input_results, ..] = &results[..] {
         let input = input_results.get_only::<Input>();
+
         let mut movement = player_results.get_only_mut::<PlayerMovement>();
         let mut transform = player_results.get_only_mut::<TerminalTransform>();
 
@@ -117,6 +120,11 @@ fn movement(results: Vec<QueryResultList>, _: GameCommandsArg) {
                 get_movement_direction(input, &movement_input_to_direction)
             {
                 transform.coords += *movement_direction;
+
+                transform.coords = IntCoords2d::new(
+                    transform.coords.x().clamp(0, SCREEN_WIDTH as i64 - 1),
+                    transform.coords.y(),
+                );
 
                 movement.move_timer.restart();
             }

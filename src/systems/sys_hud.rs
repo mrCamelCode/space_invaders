@@ -1,6 +1,6 @@
 use thomas::{
-    Alignment, GameCommand, Identity, IntCoords2d, Query, System, SystemsGenerator, Text, UiAnchor,
-    EVENT_INIT, EVENT_UPDATE,
+    Alignment, GameCommand, Identity, IntCoords2d, Query, Rgb, System, SystemsGenerator, Text,
+    UiAnchor, EVENT_INIT, EVENT_UPDATE,
 };
 
 use crate::{Player, Scorekeeper, PLAYER_DISPLAY_CHAR};
@@ -23,6 +23,8 @@ impl SystemsGenerator for HudSystemsGenerator {
                             justification: Alignment::Left,
                             offset: IntCoords2d::zero(),
                             value: String::from(""),
+                            foreground_color: Some(Rgb::white()),
+                            background_color: None,
                         }),
                         Box::new(Identity {
                             id: String::from(LIVES_TAG_ID),
@@ -36,6 +38,8 @@ impl SystemsGenerator for HudSystemsGenerator {
                             justification: Alignment::Left,
                             offset: IntCoords2d::down(),
                             value: String::from(""),
+                            foreground_color: Some(Rgb::white()),
+                            background_color: None,
                         }),
                         Box::new(Identity {
                             id: String::from(LEVEL_TAG_ID),
@@ -49,6 +53,8 @@ impl SystemsGenerator for HudSystemsGenerator {
                             justification: Alignment::Right,
                             offset: IntCoords2d::down(),
                             value: String::from(""),
+                            foreground_color: Some(Rgb::white()),
+                            background_color: None,
                         }),
                         Box::new(Identity {
                             id: String::from(SCORE_TAG_ID),
@@ -62,6 +68,8 @@ impl SystemsGenerator for HudSystemsGenerator {
                             justification: Alignment::Right,
                             offset: IntCoords2d::zero(),
                             value: String::from(""),
+                            foreground_color: Some(Rgb::white()),
+                            background_color: None,
                         }),
                         Box::new(Identity {
                             id: String::from(HIGH_SCORE_TAG_ID),

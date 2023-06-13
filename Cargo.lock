@@ -54,9 +54,9 @@ dependencies = [
 
 [[package]]
 name = "crossterm_winapi"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ae1b35a484aa10e07fe0638d02301c5ad24de82d310ccbd2f3693da5f09bf1c"
+checksum = "acdd7c62a3665c7f6830a51635d9ac9b23ed385797f70a83bb8bafe9c572ab2b"
 dependencies = [
  "winapi",
 ]
@@ -304,9 +304,9 @@ dependencies = [
 
 [[package]]
 name = "thomas"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cac3b5952d81bfefec6e7f30b36e0cb099b15d280617f524956d74550632beec"
+checksum = "945ead818a518ecd6682d82cc7f676f56b22e9dfda66fd86785ea26f9a6bcc9c"
 dependencies = [
  "crossterm",
  "device_query",

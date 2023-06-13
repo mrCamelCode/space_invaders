@@ -12,7 +12,7 @@ mod prefabs;
 pub use prefabs::*;
 
 use thomas::{
-    Dimensions2d, Game, GameOptions, Renderer, TerminalCollisionsSystemsGenerator,
+    Dimensions2d, Game, GameOptions, Renderer, Rgb, TerminalCollisionsSystemsGenerator,
     TerminalRendererOptions, TerminalUiRendererSystemsGenerator,
 };
 
@@ -21,6 +21,9 @@ pub fn run() {
         max_frame_rate: 60,
         press_escape_to_quit: false,
     })
+    // .add_systems_from_generator(EngineAnalysisSystemsGenerator::new(EngineAnalysisOptions {
+    //     include_tracking_ui: true,
+    // }))
     .add_systems_from_generator(TerminalCollisionsSystemsGenerator::new())
     .add_systems_from_generator(TerminalUiRendererSystemsGenerator::new())
     .add_systems_from_generator(HudSystemsGenerator {})
@@ -31,6 +34,7 @@ pub fn run() {
     .start(Renderer::Terminal(TerminalRendererOptions {
         include_default_camera: true,
         screen_resolution: Dimensions2d::new(SCREEN_HEIGHT, SCREEN_WIDTH),
-        include_screen_outline: true,
+        default_foreground_color: None,
+        default_background_color: Some(Rgb::black()),
     }));
 }
