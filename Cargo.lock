@@ -304,9 +304,9 @@ dependencies = [
 
 [[package]]
 name = "thomas"
-version = "0.2.1"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "945ead818a518ecd6682d82cc7f676f56b22e9dfda66fd86785ea26f9a6bcc9c"
+checksum = "7320b892029a5b3c6fc1662d00328089a801760528e6ea90e828816c74ad79b5"
 dependencies = [
  "crossterm",
  "device_query",
