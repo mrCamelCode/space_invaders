@@ -9,4 +9,4 @@ This game demonstrates simple concepts, like rendering and moving entities aroun
 Controls:
 - Move: `A`, `D`
 - Shoot: `Space`
-
+- Quit: `Ctrl+C`
